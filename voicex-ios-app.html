@@ -1,0 +1,1467 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="VoiceX">
+    <title>VoiceX - Голосовое устройство</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f7;
+            color: #1d1d1f;
+            overflow-x: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+        }
+        
+        .app {
+            max-width: 100vw;
+            min-height: 100vh;
+            position: relative;
+        }
+        
+        .page {
+            display: none;
+            min-height: 100vh;
+            padding-bottom: 100px;
+        }
+        
+        .page.active {
+            display: block;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #007AFF, #5856D6);
+            color: white;
+            padding: 50px 20px 20px;
+            border-radius: 0 0 25px 25px;
+        }
+        
+        .header-nav {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .back-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 18px;
+            padding: 8px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        
+        .header-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-left: 10px;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 10px;
+            margin-left: auto;
+        }
+        
+        .icon-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .icon-btn:active {
+            transform: scale(0.95);
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .device-status {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            margin-top: 15px;
+        }
+        
+        .status-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #34C759;
+        }
+        
+        .status-dot.disconnected {
+            background: #FF3B30;
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+        
+        .content {
+            padding: 20px;
+        }
+        
+        .quick-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .quick-action {
+            background: white;
+            border: 1px solid #e5e5e7;
+            border-radius: 20px;
+            padding: 25px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        .quick-action:active {
+            transform: scale(0.98);
+            background: #f5f5f7;
+        }
+        
+        .quick-action-icon {
+            font-size: 24px;
+            margin-bottom: 10px;
+            display: block;
+        }
+        
+        .quick-action-text {
+            font-weight: 600;
+        }
+        
+        .features-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .feature-item {
+            background: white;
+            border: 1px solid #e5e5e7;
+            border-radius: 20px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: between;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        .feature-item:active {
+            transform: scale(0.98);
+            background: #f5f5f7;
+        }
+        
+        .feature-content {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .feature-icon {
+            font-size: 24px;
+        }
+        
+        .feature-text h3 {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+        
+        .feature-text p {
+            font-size: 14px;
+            color: #8e8e93;
+        }
+        
+        .chevron {
+            font-size: 18px;
+            color: #c7c7cc;
+        }
+        
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid #e5e5e7;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 100;
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: none;
+            border: none;
+            color: #8e8e93;
+        }
+        
+        .nav-item.active {
+            color: #007AFF;
+        }
+        
+        .nav-item:active {
+            transform: scale(0.95);
+        }
+        
+        .nav-icon {
+            font-size: 24px;
+        }
+        
+        .nav-text {
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .dark-mode {
+            background: #000;
+            color: #fff;
+        }
+        
+        .dark-mode .header {
+            background: linear-gradient(135deg, #1c1c1e, #2c2c2e);
+        }
+        
+        .dark-mode .device-status {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .dark-mode .quick-action,
+        .dark-mode .feature-item {
+            background: #1c1c1e;
+            border-color: #38383a;
+            color: #fff;
+        }
+        
+        .dark-mode .quick-action:active,
+        .dark-mode .feature-item:active {
+            background: #2c2c2e;
+        }
+        
+        .dark-mode .bottom-nav {
+            background: #1c1c1e;
+            border-top-color: #38383a;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 1px solid #e5e5e7;
+        }
+        
+        .dark-mode .card {
+            background: #1c1c1e;
+            border-color: #38383a;
+            color: #fff;
+        }
+        
+        .card-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+        
+        .recording-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: #f5f5f7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 48px;
+            color: #8e8e93;
+            transition: all 0.3s;
+        }
+        
+        .recording-circle.recording {
+            background: #ff3b30;
+            color: white;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .record-btn {
+            background: #007AFF;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0 auto;
+        }
+        
+        .record-btn.recording {
+            background: #ff3b30;
+        }
+        
+        .record-btn:active {
+            transform: scale(0.98);
+        }
+        
+        .upload-area {
+            border: 2px dashed #c7c7cc;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .upload-area input {
+            display: none;
+        }
+        
+        .upload-btn {
+            background: #007AFF;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        
+        .profile-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .profile-option {
+            border: 2px solid #e5e5e7;
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .profile-option.selected {
+            border-color: #007AFF;
+            background: rgba(0, 122, 255, 0.1);
+        }
+        
+        .profile-emoji {
+            font-size: 24px;
+        }
+        
+        .volume-display {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .volume-number {
+            font-size: 48px;
+            font-weight: 700;
+            color: #007AFF;
+            margin-bottom: 8px;
+        }
+        
+        .volume-slider {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: #e5e5e7;
+            outline: none;
+            appearance: none;
+            margin: 20px 0;
+        }
+        
+        .volume-slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #007AFF;
+            cursor: pointer;
+        }
+        
+        .volume-controls {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+        }
+        
+        .volume-btn {
+            background: #e5e5e7;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            flex: 1;
+        }
+        
+        .dark-mode .volume-btn {
+            background: #38383a;
+            color: #fff;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 28px;
+            background: #e5e5e7;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .toggle-switch.active {
+            background: #007AFF;
+        }
+        
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+        
+        .toggle-switch.active::after {
+            transform: translateX(22px);
+        }
+        
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid #e5e5e7;
+        }
+        
+        .dark-mode .setting-item {
+            border-bottom-color: #38383a;
+        }
+        
+        .setting-item:last-child {
+            border-bottom: none;
+        }
+        
+        .setting-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .setting-text h3 {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .setting-text p {
+            font-size: 14px;
+            color: #8e8e93;
+        }
+        
+        .sos-button {
+            width: 160px;
+            height: 160px;
+            background: #ff3b30;
+            border: 8px solid rgba(255, 59, 48, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 30px auto;
+            font-size: 60px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .sos-button:active {
+            transform: scale(0.95);
+            background: #d70015;
+        }
+        
+        .contact-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: rgba(52, 199, 89, 0.1);
+            border: 1px solid rgba(52, 199, 89, 0.3);
+            border-radius: 12px;
+            margin-bottom: 12px;
+        }
+        
+        .contact-info h4 {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .contact-info p {
+            font-size: 14px;
+            color: #8e8e93;
+        }
+        
+        .contact-emoji {
+            font-size: 24px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .stat-card {
+            text-align: center;
+            padding: 20px;
+            border-radius: 15px;
+            background: rgba(0, 122, 255, 0.1);
+        }
+        
+        .stat-number {
+            font-size: 28px;
+            font-weight: 700;
+            color: #007AFF;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #007AFF;
+        }
+        
+        .progress-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+        }
+        
+        .day-label {
+            width: 24px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .progress-track {
+            flex: 1;
+            height: 8px;
+            background: #e5e5e7;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #007AFF;
+            transition: width 0.3s;
+        }
+        
+        .time-label {
+            font-size: 12px;
+            color: #8e8e93;
+            width: 30px;
+        }
+        
+        .recommendations {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .recommendation {
+            padding: 15px;
+            border-radius: 12px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        
+        .recommendation.success {
+            background: rgba(52, 199, 89, 0.1);
+            border: 1px solid rgba(52, 199, 89, 0.3);
+        }
+        
+        .recommendation.warning {
+            background: rgba(255, 149, 0, 0.1);
+            border: 1px solid rgba(255, 149, 0, 0.3);
+        }
+        
+        .recommendation.info {
+            background: rgba(0, 122, 255, 0.1);
+            border: 1px solid rgba(0, 122, 255, 0.3);
+        }
+        
+        .rec-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-top: 6px;
+        }
+        
+        .rec-dot.success { background: #34C759; }
+        .rec-dot.warning { background: #FF9500; }
+        .rec-dot.info { background: #007AFF; }
+        
+        .rec-text h4 {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .rec-text p {
+            font-size: 14px;
+            color: #8e8e93;
+        }
+    </style>
+</head>
+<body>
+    <div class="app" id="app">
+        <!-- Home Page -->
+        <div class="page active" id="home">
+            <div class="header">
+                <div class="header-nav">
+                    <h1 class="header-title">VoiceX</h1>
+                    <div class="header-actions">
+                        <button class="icon-btn" onclick="toggleDarkMode()">🌙</button>
+                        <button class="icon-btn" onclick="showPage('settings')">⚙️</button>
+                    </div>
+                </div>
+                
+                <div class="device-status">
+                    <div class="status-header">
+                        <div class="status-indicator">
+                            <div class="status-dot" id="statusDot"></div>
+                            <span id="statusText">Устройство подключено</span>
+                        </div>
+                        <span>📶</span>
+                    </div>
+                    
+                    <div class="status-grid">
+                        <div class="status-item">
+                            <span>🔋</span>
+                            <span id="batteryLevel">78%</span>
+                        </div>
+                        <div class="status-item">
+                            <span>🔊</span>
+                            <span id="volumeLevel">65%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="content">
+                <div class="quick-actions">
+                    <a href="#" class="quick-action" onclick="showPage('voice-setup')">
+                        <span class="quick-action-icon">🎤</span>
+                        <div class="quick-action-text">Настройка голоса</div>
+                    </a>
+                    
+                    <a href="#" class="quick-action" onclick="showPage('volume-control')">
+                        <span class="quick-action-icon">🔊</span>
+                        <div class="quick-action-text">Громкость</div>
+                    </a>
+                </div>
+                
+                <div class="features-list">
+                    <a href="#" class="feature-item" onclick="showPage('ai-assistant')">
+                        <div class="feature-content">
+                            <span class="feature-icon">💬</span>
+                            <div class="feature-text">
+                                <h3>ИИ Ассистент</h3>
+                                <p>Помощь в реальном времени</p>
+                            </div>
+                        </div>
+                        <span class="chevron">›</span>
+                    </a>
+                    
+                    <a href="#" class="feature-item" onclick="showPage('health-monitor')">
+                        <div class="feature-content">
+                            <span class="feature-icon">❤️</span>
+                            <div class="feature-text">
+                                <h3>Мониторинг здоровья</h3>
+                                <p>Отслеживание использования</p>
+                            </div>
+                        </div>
+                        <span class="chevron">›</span>
+                    </a>
+                    
+                    <a href="#" class="feature-item" onclick="showPage('sos')">
+                        <div class="feature-content">
+                            <span class="feature-icon">🚨</span>
+                            <div class="feature-text">
+                                <h3>Экстренный вызов</h3>
+                                <p>SOS функция</p>
+                            </div>
+                        </div>
+                        <span class="chevron">›</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Voice Setup Page -->
+        <div class="page" id="voice-setup">
+            <div class="header">
+                <div class="header-nav">
+                    <button class="back-btn" onclick="showPage('home')">‹</button>
+                    <h1 class="header-title">Настройка голоса</h1>
+                </div>
+            </div>
+            
+            <div class="content">
+                <div class="card">
+                    <h2 class="card-title">Запись голоса</h2>
+                    <div style="text-align: center;">
+                        <div class="recording-circle" id="recordingCircle">
+                            🎤
+                        </div>
+                        <div id="recordingTimer" style="display: none; font-size: 24px; color: #ff3b30; margin-bottom: 20px;">0:00</div>
+                        <button class="record-btn" id="recordBtn" onclick="toggleRecording()">
+                            ▶️ Начать запись
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h2 class="card-title">Загрузка голоса</h2>
+                    <div class="upload-area">
+                        <div style="font-size: 32px; margin-bottom: 15px;">📁</div>
+                        <p>Загрузите аудиофайл с вашим голосом</p>
+                        <input type="file" id="voiceUpload" accept="audio/*" onchange="handleVoiceUpload(event)">
+                        <label for="voiceUpload" class="upload-btn">Выбрать файл</label>
+                        <div id="uploadResult" style="display: none; margin-top: 15px; padding: 10px; background: rgba(52, 199, 89, 0.1); border-radius: 8px;"></div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h2 class="card-title">Профиль пользователя</h2>
+                    <div class="profile-options">
+                        <div class="profile-option selected" onclick="selectProfile(this)">
+                            <span class="profile-emoji">👶</span>
+                            <span>Детский режим</span>
+                        </div>
+                        <div class="profile-option" onclick="selectProfile(this)">
+                            <span class="profile-emoji">👤</span>
+                            <span>Взрослый</span>
+                        </div>
+                        <div class="profile-option" onclick="selectProfile(this)">
+                            <span class="profile-emoji">👴</span>
+                            <span>Пожилой</span>
+                        </div>
+                        <div class="profile-option" onclick="selectProfile(this)">
+                            <span class="profile-emoji">♿</span>
+                            <span>С ограниченными возможностями</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Volume Control Page -->
+        <div class="page" id="volume-control">
+            <div class="header">
+                <div class="header-nav">
+                    <button class="back-btn" onclick="showPage('home')">‹</button>
+                    <h1 class="header-title">Управление громкостью</h1>
+                </div>
+            </div>
+            
+            <div class="content">
+                <div class="card">
+                    <div class="volume-display">
+                        <div style="font-size: 48px; margin-bottom: 15px;">🔊</div>
+                        <div class="volume-number" id="volumeNumber">65%</div>
+                        <p style="color: #8e8e93;">Текущая громкость</p>
+                    </div>
+                    
+                    <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="65">
+                    
+                    <div class="volume-controls">
+                        <button class="volume-btn" onclick="changeVolume(-10)">-10</button>
+                        <button class="volume-btn" onclick="changeVolume(10)">+10</button>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <span style="font-size: 24px;">⚡</span>
+                            <div class="setting-text">
+                                <h3>Адаптивная громкость</h3>
+                                <p>Автоматическая регулировка по шуму</p>
+                            </div>
+                        </div>
+                        <div class="toggle-switch active" onclick="toggleSwitch(this)"></div>
+                    </div>
+                    
+                    <div style="margin-top: 20px;">
+                        <div style="display: flex; justify-between; align-items: center; padding: 12px; background: rgba(52, 199, 89, 0.1); border-radius: 8px; margin-bottom: 8px;">
+                            <span style="color: #34C759; font-weight: 600;">Тихая обстановка</span>
+                            <span style="color: #34C759; font-weight: 600;">40%</span>
+                        </div>
+                        <div style="display: flex; justify-between; align-items: center; padding: 12px; background: rgba(255, 149, 0, 0.1); border-radius: 8px; margin-bottom: 8px;">
+                            <span style="color: #FF9500; font-weight: 600;">Средний шум</span>
+                            <span style="color: #FF9500; font-weight: 600;">65%</span>
+                        </div>
+                        <div style="display: flex; justify-between; align-items: center; padding: 12px; background: rgba(255, 59, 48, 0.1); border-radius: 8px;">
+                            <span style="color: #FF3B30; font-weight: 600;">Громкая обстановка</span>
+                            <span style="color: #FF3B30; font-weight: 600;">90%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- AI Assistant Page -->
+        <div class="page" id="ai-assistant">
+            <div class="header" style="background: linear-gradient(135deg, #5856D6, #AF52DE);">
+                <div class="header-nav">
+                    <button class="back-btn" onclick="showPage('home')">‹</button>
+                    <h1 class="header-title">ИИ Ассистент</h1>
+                </div>
+            </div>
+            
+            <div class="content">
+                <div class="card">
+                    <div style="padding: 15px; background: #f5f5f7; border-radius: 15px; margin-bottom: 15px;">
+                        <p>Привет! Я ваш голосовой ассистент. Как дела с устройством?</p>
+                    </div>
+                    
+                    <div style="padding: 15px; background: #007AFF; color: white; border-radius: 15px; margin-left: 40px; margin-bottom: 15px;">
+                        <p>Устройство работает, но голос звучит тихо</p>
+                    </div>
+                    
+                    <div style="padding: 15px; background: #f5f5f7; border-radius: 15px; margin-bottom: 20px;">
+                        <p>Понял! Попробуйте увеличить громкость в настройках. Также проверьте, включена ли адаптивная громкость.</p>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3 style="margin-bottom: 15px;">Быстрая помощь</h3>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <button style="padding: 15px; text-align: left; background: white; border: 1px solid #e5e5e7; border-radius: 12px; cursor: pointer;">
+                            <p style="font-weight: 600;">Как улучшить качество голоса?</p>
+                        </button>
+                        <button style="padding: 15px; text-align: left; background: white; border: 1px solid #e5e5e7; border-radius: 12px; cursor: pointer;">
+                            <p style="font-weight: 600;">Проблемы с подключением</p>
+                        </button>
+                        <button style="padding: 15px; text-align: left; background: white; border: 1px solid #e5e5e7; border-radius: 12px; cursor: pointer;">
+                            <p style="font-weight: 600;">Настройка под мой голос</p>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- SOS Page -->
+        <div class="page" id="sos">
+            <div class="header" style="background: linear-gradient(135deg, #FF3B30, #FF9500);">
+                <div class="header-nav">
+                    <button class="back-btn" onclick="showPage('home')">‹</button>
+                    <h1 class="header-title">Экстренный вызов SOS</h1>
+                </div>
+            </div>
+            
+            <div class="content">
+                <div class="card" style="text-align: center;">
+                    <div class="sos-button" onclick="activateSOS()">
+                        🚨
+                    </div>
+                    <h3 style="color: #FF3B30; font-size: 20px; margin-bottom: 10px;">ЭКСТРЕННЫЙ ВЫЗОВ</h3>
+                    <p style="color: #8e8e93; margin-bottom: 8px;">Нажмите и удерживайте для отправки SOS</p>
+                    <p style="color: #8e8e93; font-size: 14px;">Будут отправлены координаты и сообщение</p>
+                </div>
+                
+                <div class="card">
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <span style="font-size: 24px;">🛡️</span>
+                            <div class="setting-text">
+                                <h3>Включить SOS функцию</h3>
+                                <p>Активировать экстренные вызовы</p>
+                            </div>
+                        </div>
+                        <div class="toggle-switch active" onclick="toggleSwitch(this)"></div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3 style="margin-bottom: 20px;">Экстренные контакты</h3>
+                    
+                    <div class="contact-item" style="background: rgba(255, 59, 48, 0.1); border-color: rgba(255, 59, 48, 0.3);">
+                        <div class="contact-info">
+                            <h4 style="color: #FF3B30;">Служба экстренного реагирования</h4>
+                            <p style="color: #FF3B30;">103</p>
+                        </div>
+                        <span class="contact-emoji">📞</span>
+                    </div>
+                    
+                    <div class="contact-item" style="background: rgba(0, 122, 255, 0.1); border-color: rgba(0, 122, 255, 0.3);">
+                        <div class="contact-info">
+                            <h4 style="color: #007AFF;">Семейный врач</h4>
+                            <p style="color: #007AFF;">+7 (777) 123-45-67</p>
+                        </div>
+                        <span class="contact-emoji">👨‍⚕️</span>
+                    </div>
+                    
+                    <div class="contact-item">
+                        <div class="contact-info">
+                            <h4 style="color: #34C759;">Родственник</h4>
+                            <p style="color: #34C759;">+7 (777) 987-65-43</p>
+                        </div>
+                        <span class="contact-emoji">👨‍👩‍👧‍👦</span>
+                    </div>
+                    
+                    <button style="width: 100%; padding: 15px; border: 2px dashed #c7c7cc; background: none; border-radius: 12px; color: #8e8e93; margin-top: 10px; cursor: pointer;">
+                        + Добавить контакт
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Health Monitor Page -->
+        <div class="page" id="health-monitor">
+            <div class="header" style="background: linear-gradient(135deg, #FF3B30, #FF9500);">
+                <div class="header-nav">
+                    <button class="back-btn" onclick="showPage('home')">‹</button>
+                    <h1 class="header-title">Мониторинг здоровья</h1>
+                </div>
+            </div>
+            
+            <div class="content">
+                <div class="card">
+                    <h2 class="card-title">Статистика использования</h2>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card" style="background: rgba(0, 122, 255, 0.1);">
+                            <div class="stat-number" style="color: #007AFF;">5.2</div>
+                            <div class="stat-label" style="color: #007AFF;">часов сегодня</div>
+                        </div>
+                        
+                        <div class="stat-card" style="background: rgba(52, 199, 89, 0.1);">
+                            <div class="stat-number" style="color: #34C759;">87</div>
+                            <div class="stat-label" style="color: #34C759;">слов в минуту</div>
+                        </div>
+                        
+                        <div class="stat-card" style="background: rgba(88, 86, 214, 0.1);">
+                            <div class="stat-number" style="color: #5856D6;">94%</div>
+                            <div class="stat-label" style="color: #5856D6;">качество голоса</div>
+                        </div>
+                        
+                        <div class="stat-card" style="background: rgba(255, 149, 0, 0.1);">
+                            <div class="stat-number" style="color: #FF9500;">12</div>
+                            <div class="stat-label" style="color: #FF9500;">дней подряд</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h2 class="card-title">Рекомендации</h2>
+                    
+                    <div class="recommendations">
+                        <div class="recommendation success">
+                            <div class="rec-dot success"></div>
+                            <div class="rec-text">
+                                <h4>Отличная работа!</h4>
+                                <p>Вы регулярно используете устройство</p>
+                            </div>
+                        </div>
+                        
+                        <div class="recommendation warning">
+                            <div class="rec-dot warning"></div>
+                            <div class="rec-text">
+                                <h4>Проведите калибровку</h4>
+                                <p>Рекомендуется обновить настройки голоса</p>
+                            </div>
+                        </div>
+                        
+                        <div class="recommendation info">
+                            <div class="rec-dot info"></div>
+                            <div class="rec-text">
+                                <h4>Сделайте перерыв</h4>
+                                <p>После 6 часов использования рекомендуется отдых</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h2 class="card-title">Прогресс за неделю</h2>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <div class="progress-bar">
+                            <div class="day-label">Пн</div>
+                            <div class="progress-track">
+                                <div class="progress-fill" style="width: 85%;"></div>
+                            </div>
+                            <div class="time-label">6ч</div>
+                        </div>
+                        
+                        <div class="progress-bar">
+                            <div class="day-label">Вт</div>
+                            <div class="progress-track">
+                                <div class="progress-fill" style="width: 70%;"></div>
+                            </div>
+                            <div class="time-label">5ч</div>
+                        </div>
+                        
+                        <div class="progress-bar">
+                            <div class="day-label">Ср</div>
+                            <div class="progress-track">
+                                <div class="progress-fill" style="width: 90%;"></div>
+                            </div>
+                            <div class="time-label">7ч</div>
+                        </div>
+                        
+                        <div class="progress-bar">
+                            <div class="day-label">Чт</div>
+                            <div class="progress-track">
+                                <div class="progress-fill" style="width: 60%;"></div>
+                            </div>
+                            <div class="time-label">4ч</div>
+                        </div>
+                        
+                        <div class="progress-bar">
+                            <div class="day-label">Пт</div>
+                            <div class="progress-track">
+                                <div class="progress-fill" style="width: 75%;"></div>
+                            </div>
+                            <div class="time-label">5ч</div>
+                        </div>
+                        
+                        <div class="progress-bar">
+                            <div class="day-label">Сб</div>
+                            <div class="progress-track">
+                                <div class="progress-fill" style="width: 50%;"></div>
+                            </div>
+                            <div class="time-label">3ч</div>
+                        </div>
+                        
+                        <div class="progress-bar">
+                            <div class="day-label">Вс</div>
+                            <div class="progress-track">
+                                <div class="progress-fill" style="width: 65%;"></div>
+                            </div>
+                            <div class="time-label">5ч</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Settings Page -->
+        <div class="page" id="settings">
+            <div class="header" style="background: linear-gradient(135deg, #8E8E93, #636366);">
+                <div class="header-nav">
+                    <button class="back-btn" onclick="showPage('home')">‹</button>
+                    <h1 class="header-title">Настройки</h1>
+                </div>
+            </div>
+            
+            <div class="content">
+                <div class="card">
+                    <h2 class="card-title">Информация об устройстве</h2>
+                    
+                    <div class="setting-item">
+                        <span style="color: #8e8e93;">Модель:</span>
+                        <span style="font-weight: 600;">VoiceX Pro</span>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <span style="color: #8e8e93;">Версия ПО:</span>
+                        <span style="font-weight: 600;">2.1.0</span>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <span style="color: #8e8e93;">Батарея:</span>
+                        <span style="font-weight: 600;">78%</span>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <span style="color: #8e8e93;">Статус:</span>
+                        <span style="font-weight: 600; color: #34C759;">Подключено</span>
+                    </div>
+                </div>
+                
+                <div class="features-list">
+                    <a href="#" class="feature-item" onclick="showPage('feedback')">
+                        <div class="feature-content">
+                            <span class="feature-icon">💬</span>
+                            <div class="feature-text">
+                                <h3>Обратная связь</h3>
+                                <p>Сообщить о проблеме или предложить улучшение</p>
+                            </div>
+                        </div>
+                        <span class="chevron">›</span>
+                    </a>
+                    
+                    <a href="#" class="feature-item" onclick="showPage('health-monitor')">
+                        <div class="feature-content">
+                            <span class="feature-icon">❤️</span>
+                            <div class="feature-text">
+                                <h3>Мониторинг здоровья</h3>
+                                <p>История использования и рекомендации</p>
+                            </div>
+                        </div>
+                        <span class="chevron">›</span>
+                    </a>
+                    
+                    <a href="#" class="feature-item">
+                        <div class="feature-content">
+                            <span class="feature-icon">❓</span>
+                            <div class="feature-text">
+                                <h3>Помощь и поддержка</h3>
+                                <p>FAQ и техническая поддержка</p>
+                            </div>
+                        </div>
+                        <span class="chevron">›</span>
+                    </a>
+                </div>
+                
+                <div style="text-align: center; padding-top: 30px;">
+                    <p style="color: #8e8e93; font-size: 14px;">VoiceX App версия 1.0.0</p>
+                    <p style="color: #8e8e93; font-size: 12px; margin-top: 5px;">© 2025 VoiceX Technologies</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Feedback Page -->
+        <div class="page" id="feedback">
+            <div class="header" style="background: linear-gradient(135deg, #34C759, #30B651);">
+                <div class="header-nav">
+                    <button class="back-btn" onclick="showPage('settings')">‹</button>
+                    <h1 class="header-title">Обратная связь</h1>
+                </div>
+            </div>
+            
+            <div class="content">
+                <div class="card">
+                    <h2 class="card-title">Тип обращения</h2>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <button style="padding: 20px; border: 2px solid #FF3B30; background: rgba(255, 59, 48, 0.1); border-radius: 15px; text-align: center; cursor: pointer;">
+                            <div style="font-size: 24px; margin-bottom: 8px;">🚨</div>
+                            <p style="color: #FF3B30; font-weight: 600;">Проблема</p>
+                        </button>
+                        
+                        <button style="padding: 20px; border: 2px solid #007AFF; background: rgba(0, 122, 255, 0.1); border-radius: 15px; text-align: center; cursor: pointer;">
+                            <div style="font-size: 24px; margin-bottom: 8px;">💡</div>
+                            <p style="color: #007AFF; font-weight: 600;">Предложение</p>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h2 class="card-title">Опишите ваше обращение</h2>
+                    
+                    <textarea style="width: 100%; height: 120px; padding: 15px; border: 1px solid #e5e5e7; border-radius: 12px; resize: none; font-family: inherit;" placeholder="Расскажите подробно о проблеме или предложении..."></textarea>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
+                        <span style="font-size: 14px; color: #8e8e93;">0 / 500 символов</span>
+                        <button style="background: #34C759; color: white; border: none; padding: 12px 24px; border-radius: 12px; font-weight: 600; cursor: pointer;">
+                            Отправить
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h2 class="card-title">Контактная информация</h2>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <input type="email" placeholder="Ваш email" style="padding: 15px; border: 1px solid #e5e5e7; border-radius: 12px; font-size: 16px;">
+                        <input type="tel" placeholder="Телефон (необязательно)" style="padding: 15px; border: 1px solid #e5e5e7; border-radius: 12px; font-size: 16px;">
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+            <button class="nav-item active" onclick="setActiveNav(this); showPage('home')">
+                <span class="nav-icon">🏠</span>
+                <span class="nav-text">Главная</span>
+            </button>
+            <button class="nav-item" onclick="setActiveNav(this); showPage('connect')">
+                <span class="nav-icon">📶</span>
+                <span class="nav-text">Подключение</span>
+            </button>
+            <button class="nav-item" onclick="setActiveNav(this); showPage('settings')">
+                <span class="nav-icon">⚙️</span>
+                <span class="nav-text">Настройки</span>
+            </button>
+        </div>
+        
+        <!-- Connect Page -->
+        <div class="page" id="connect">
+            <div class="header">
+                <div class="header-nav">
+                    <button class="back-btn" onclick="showPage('home')">‹</button>
+                    <h1 class="header-title">Подключение устройства</h1>
+                </div>
+            </div>
+            
+            <div class="content">
+                <div class="card" style="text-align: center;">
+                    <div style="width: 80px; height: 80px; margin: 0 auto 20px; background: rgba(52, 199, 89, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px;">
+                        📶
+                    </div>
+                    <h3 style="font-size: 20px; margin-bottom: 10px;">Устройство подключено</h3>
+                    <p style="color: #8e8e93; margin-bottom: 20px;">VoiceX готов к использованию</p>
+                    <button style="background: #007AFF; color: white; border: none; padding: 15px 30px; border-radius: 25px; font-weight: 600; cursor: pointer;" onclick="toggleConnection()">
+                        Отключить
+                    </button>
+                </div>
+                
+                <div class="card">
+                    <h2 class="card-title">Быстрое подключение</h2>
+                    
+                    <div class="features-list">
+                        <div class="feature-item">
+                            <div class="feature-content">
+                                <span class="feature-icon">📱</span>
+                                <div class="feature-text">
+                                    <h3>Сканировать QR-код</h3>
+                                    <p>Наведите камеру на устройство</p>
+                                </div>
+                            </div>
+                            <span class="chevron">›</span>
+                        </div>
+                        
+                        <div class="feature-item">
+                            <div class="feature-content">
+                                <span class="feature-icon">📲</span>
+                                <div class="feature-text">
+                                    <h3>NFC подключение</h3>
+                                    <p>Поднесите телефон к устройству</p>
+                                </div>
+                            </div>
+                            <span class="chevron">›</span>
+                        </div>
+                        
+                        <div class="feature-item">
+                            <div class="feature-content">
+                                <span class="feature-icon">🔵</span>
+                                <div class="feature-text">
+                                    <h3>Bluetooth поиск</h3>
+                                    <p>Автоматический поиск устройств</p>
+                                </div>
+                            </div>
+                            <span class="chevron">›</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <span style="font-size: 24px;">⚡</span>
+                            <div class="setting-text">
+                                <h3>Автозапуск при ношении</h3>
+                                <p>Устройство включается автоматически</p>
+                            </div>
+                        </div>
+                        <div class="toggle-switch active" onclick="toggleSwitch(this)"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isRecording = false;
+        let recordingInterval;
+        let recordingTime = 0;
+        let isDarkMode = false;
+        let currentVolume = 65;
+        
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById(pageId).classList.add('active');
+        }
+        
+        function setActiveNav(navItem) {
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            navItem.classList.add('active');
+        }
+        
+        function toggleDarkMode() {
+            isDarkMode = !isDarkMode;
+            document.body.classList.toggle('dark-mode', isDarkMode);
+        }
+        
+        function toggleRecording() {
+            const recordBtn = document.getElementById('recordBtn');
+            const recordingCircle = document.getElementById('recordingCircle');
+            const recordingTimer = document.getElementById('recordingTimer');
+            
+            isRecording = !isRecording;
+            
+            if (isRecording) {
+                recordBtn.textContent = '⏹️ Остановить запись';
+                recordBtn.classList.add('recording');
+                recordingCircle.classList.add('recording');
+                recordingTimer.style.display = 'block';
+                
+                recordingInterval = setInterval(() => {
+                    recordingTime++;
+                    const minutes = Math.floor(recordingTime / 60);
+                    const seconds = recordingTime % 60;
+                    recordingTimer.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                }, 1000);
+            } else {
+                recordBtn.textContent = '▶️ Начать запись';
+                recordBtn.classList.remove('recording');
+                recordingCircle.classList.remove('recording');
+                recordingTimer.style.display = 'none';
+                
+                clearInterval(recordingInterval);
+                recordingTime = 0;
+            }
+        }
+        
+        function handleVoiceUpload(event) {
+            const file = event.target.files[0];
+            const uploadResult = document.getElementById('uploadResult');
+            
+            if (file) {
+                uploadResult.style.display = 'block';
+                uploadResult.innerHTML = `
+                    <div style="color: #34C759; font-weight: 600;">${file.name}</div>
+                    <div style="color: #34C759; font-size: 14px;">${(file.size / 1024 / 1024).toFixed(2)} МБ</div>
+                `;
+            }
+        }
+        
+        function selectProfile(profileElement) {
+            document.querySelectorAll('.profile-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            profileElement.classList.add('selected');
+        }
+        
+        function changeVolume(delta) {
+            currentVolume = Math.max(0, Math.min(100, currentVolume + delta));
+            updateVolumeDisplay();
+        }
+        
+        function updateVolumeDisplay() {
+            document.getElementById('volumeNumber').textContent = currentVolume + '%';
+            document.getElementById('volumeSlider').value = currentVolume;
+            document.getElementById('volumeLevel').textContent = currentVolume + '%';
+        }
+        
+        document.getElementById('volumeSlider').addEventListener('input', function(e) {
+            currentVolume = parseInt(e.target.value);
+            updateVolumeDisplay();
+        });
+        
+        function toggleSwitch(switchElement) {
+            switchElement.classList.toggle('active');
+        }
+        
+        function activateSOS() {
+            alert('SOS активирован! Экстренные службы уведомлены.');
+        }
+        
+        function toggleConnection() {
+            const statusDot = document.getElementById('statusDot');
+            const statusText = document.getElementById('statusText');
+            
+            if (statusDot.classList.contains('disconnected')) {
+                statusDot.classList.remove('disconnected');
+                statusText.textContent = 'Устройство подключено';
+            } else {
+                statusDot.classList.add('disconnected');
+                statusText.textContent = 'Устройство не найдено';
+            }
+        }
+        
+        // Initialize app
+        updateVolumeDisplay();
+        
+        // Add touch feedback for iOS
+        document.addEventListener('touchstart', function() {}, {passive: true});
+    </script>
+</body>
+</html>
